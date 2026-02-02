@@ -1,0 +1,66 @@
+import os
+import time
+import pandas as pd
+import requests
+from bs4 import BeautifulSoup
+
+# --- CONFIGURAÇÃO ---
+TOKEN = '8579259563:AAGTaRA7uHZ7-O...' # Seu token
+CHAT_ID = '@PlugIn_Ofertas' # Seu canal
+SHEET_URL = 'COLE_AQUI_O_LINK_DO_SEU_CSV' # Link da planilha
+
+def extrair_dados(url):
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"}
+    try:
+        response = requests.get(url, headers=headers, timeout=15)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        # Pega título
+        t_tag = soup.find('h1', class_='ui-pdp-title')
+        titulo = t_tag.text.strip() if t_tag else "Oferta Incrível"
+        
+        # Pega preço
+        p_tag = soup.find('meta', itemprop='price')
+        preco = f"R$ {p_tag['content']}" if p_tag else "Confira no site"
+        
+        # Pega FOTO e limpa para ficar GRANDE
+        img_tag = soup.find('img', class_='ui-pdp-image')
+        foto = img_tag.get('data-src') or img_tag.get('src')
+        if foto:
+            foto = foto.replace("-I.jpg", "-F.jpg").replace("-O.jpg", "-F.jpg").split('?')[0]
+            
+        return titulo, preco, foto
+    except:
+        return None, None, None
+
+def rodar_bot():
+    print("🚀 Bot 24h Iniciado com Sucesso!")
+    ja_postados = set()
+    
+    while True:
+        try:
+            df = pd.read_csv(SHEET_URL)
+            df.columns = df.columns.str.strip()
+            col_link = 'Linkes' if 'Linkes' in df.columns else 'Link'
+
+            for index, linha in df.iterrows():
+                link = str(linha[col_link]).strip()
+                
+                if link != 'nan' and link not in ja_postados:
+                    t, p, f = extrair_dados(link)
+                    
+                    if t and f:
+                        legenda = f"🔥 {t}\n\n💰 Por apenas: {p}\n\n🛒 COMPRE AQUI: {link}"
+                        
+                        # ENVIA COMO FOTO GRANDE (sendPhoto)
+                        requests.post(f"https://api.telegram.org/bot{TOKEN}/sendPhoto", 
+                                      data={'chat_id': CHAT_ID, 'photo': f, 'caption': legenda, 'parse_mode': 'Markdown'})
+                        
+                        ja_postados.add(link)
+            
+            time.sleep(60) # Verifica a planilha a cada minuto
+        except:
+            time.sleep(30)
+
+if __name__ ==  "__main__":
+    rodar_bot()
