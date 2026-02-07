@@ -5,9 +5,9 @@ import requests
 from bs4 import BeautifulSoup
 
 # --- CONFIGURAÇÃO ---
-TOKEN = '8579259563:AAGTaRA7uHZ7-O...' # Seu token
-CHAT_ID = '@PlugIn_Ofertas' # Seu canal
-SHEET_URL = 'COLE_AQUI_O_LINK_DO_SEU_CSV' # Link da planilha
+TOKEN = '8579259563:AAGTaRA7uHZ7-OpgmCIkY_SHDkeIbY3z29k' # Seu token
+CHAT_ID = '@PlugIn_Ofertas'
+SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTtO4yCHk9j_yMu_o7ibDwSZjVhVqn1-izNix08ceVA7jG12lSV-EHxKWkXDB82kRbFHAWBDf2prrCF/pub?output=csv'
 
 def extrair_dados(url):
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"}
@@ -64,3 +64,4 @@ def rodar_bot():
 
 if __name__ ==  "__main__":
     rodar_bot()
+
