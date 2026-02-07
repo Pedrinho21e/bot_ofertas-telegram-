@@ -5,7 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 
 # --- CONFIGURAÇÃO ---
-TOKEN = '8579259563:AAGTaRA7uHZ7-OpgmCIkY_SHDkeIbY3z29k' # Seu token
+TOKEN = '8579259563:AAEYxm0ktGMDBev2R2svYQ4nyVl99CktzuA' 
 CHAT_ID = '@PlugIn_Ofertas'
 SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTtO4yCHk9j_yMu_o7ibDwSZjVhVqn1-izNix08ceVA7jG12lSV-EHxKWkXDB82kRbFHAWBDf2prrCF/pub?output=csv'
 
@@ -64,4 +64,5 @@ def rodar_bot():
 
 if __name__ ==  "__main__":
     rodar_bot()
+
 
