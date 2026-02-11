@@ -1,3 +1,17 @@
+import threading
+from http.server import SimpleHTTPRequestHandler, HTTPServer
+import os
+
+# Função para o servidor que "engana" o Render
+def run_server():
+    port = int(os.environ.get("PORT", 10000))
+    server_address = ('', port)
+    httpd = HTTPServer(server_address, SimpleHTTPRequestHandler)
+    print(f"Servidor falso rodando na porta {port}")
+    httpd.serve_forever()
+
+# Inicia o servidor em uma "thread" separada para não travar o bot
+threading.Thread(target=run_server, daemon=True).start()
 import os
 import time
 import pandas as pd
@@ -64,6 +78,7 @@ def rodar_bot():
 
 if __name__ ==  "__main__":
     rodar_bot()
+
 
 
 
