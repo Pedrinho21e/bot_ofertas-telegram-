@@ -40,7 +40,6 @@ def rodar_bot():
     while True:
         try:
             print("Verificando planilha...")
-            # Use o link de 'Publicar na Web' (https://docs.google.com/spreadsheets/d/e/2PACX-1vTtO4yCHk9j_yMu_o7ibDwSZjVhVqn1-izNix08ceVA7jG12lSV-EHxKWkXDB82kRbFHAWBDf2prrCF/pub?gid=0&single=true&output=csv) aqui
             df = pd.read_csv(SHEET_URL)
             
             for index, row in df.iterrows():
@@ -69,6 +68,7 @@ if __name__ == "__main__":
     
     print("Bot ligado e monitorando a planilha...")
     bot.polling(none_stop=True)
+
 
 
 
