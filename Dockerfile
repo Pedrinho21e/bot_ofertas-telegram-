@@ -15,4 +15,4 @@ COPY . .
 # COMANDO PARA LIGAR: 
 # IMPORTANTE: Se o seu arquivo principal NÃO se chamar 'main.py', 
 # troque o nome abaixo pelo nome do seu arquivo (ex: bot.py)
-CMD ["python", "main.py"]
+CMD ["python", "bot.py"]
