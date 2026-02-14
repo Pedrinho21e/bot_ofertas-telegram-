@@ -19,7 +19,7 @@ def run_flask():
 
 # --- CONFIGURAÇÃO DO BOT ---
 TOKEN = '8579259563:AAEYxm0ktGMDBev2R2svYQ4nyVl99CktzuA'
-CHAT_ID = '-1003233748780'
+CHAT_ID = '@plugin_oferta'
 bot = telebot.TeleBot(TOKEN)
 
 # (Mantenha suas funções extrair_dados e rodar_bot aqui como estavam...)
@@ -37,3 +37,4 @@ if __name__ == "__main__":
     # 2. Inicia o loop do seu bot
     # none_stop=True garante que ele não pare se houver erro de rede
     bot.polling(none_stop=True)
+
