@@ -7,7 +7,7 @@ from flask import Flask
 # 1. CONFIGURAÇÕES INICIAIS
 TOKEN = '8579259563:AAEYxm0ktGMDBev2R2svYQ4nyV199CktzuA'
 # DICA: Se o erro de API persistir, use o ID numérico: -1003233748780
-CHAT_ID = '@plugin_oferta' 
+CHAT_ID = '-1003233748780' 
 
 # DEFINA A VARIÁVEL SHEET_URL AQUI (O seu link CSV)
 SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTtO4yCHk9jG121SV-EHxKWkXDB82kRbFHAWBDF2prrCF/pub?gid=0&single=true&output=csv'
@@ -58,3 +58,4 @@ if __name__ == "__main__":
     
     print("Bot ligado e monitorando a planilha...")
     bot.polling(none_stop=True)
+
