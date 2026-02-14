@@ -1,11 +1,5 @@
-requests
 pandas
+requests
 beautifulsoup4
-selenium
-webdriver-manager
-flask 
-
-
-
-
-
+pyTelegramBotAPI
+flask
