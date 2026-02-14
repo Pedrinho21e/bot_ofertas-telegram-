@@ -58,3 +58,12 @@ def rodar_bot():
             print(f"Erro na planilha: {e}")
             
         time.sleep(60) # Espera 1 minuto
+if __name__ == "__main__":
+    # Inicia o servidor para o Koyeb não dar erro de health check
+    threading.Thread(target=run_flask).start()
+    
+    # LIGA O MONITOR DE PLANILHA (O que você acabou de escrever)
+    threading.Thread(target=rodar_bot).start()
+    
+    print("Bot ligado e monitorando a planilha...")
+    bot.polling(none_stop=True)
