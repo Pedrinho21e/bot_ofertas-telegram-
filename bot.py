@@ -80,7 +80,26 @@ def testar(message):
     bot.reply_to(message, "Bot Online e acompanhando a planilha!")
 if __name__ ==  "__main__":
     rodar_bot()
+  import threading
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return "Bot está vivo!"
+
+def run_flask():
+    app.run(host='0.0.0.0', port=8080)
+
+if __name__ == "__main__":
+    # Inicia o servidor fantasma em uma linha separada
+    threading.Thread(target=run_flask).start()
+    
+    # Inicia o seu bot
+    print("Bot iniciado...")
     bot.polling(none_stop=True)
+
 
 
 
