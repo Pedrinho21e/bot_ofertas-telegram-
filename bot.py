@@ -19,7 +19,7 @@ def run_flask():
 
 # 2. CONFIGURAÇÃO DO BOT (CRIAR A VARIÁVEL 'bot' PRIMEIRO)
 TOKEN = '8579259563:AAEYxm0ktGMDBev2R2svYQ4nyVl99CktzuA'
-CHAT_ID = '-1003233748780' # Certifique-se que o bot é ADM aqui
+CHAT_ID = '@plugin_oferta' # Certifique-se que o bot é ADM aqui
 bot = telebot.TeleBot(TOKEN)
 
 # 3. FUNÇÕES DE EXTRAÇÃO (COLOQUE SUAS FUNÇÕES AQUI)
@@ -67,3 +67,4 @@ if __name__ == "__main__":
     
     print("Bot ligado e monitorando a planilha...")
     bot.polling(none_stop=True)
+
