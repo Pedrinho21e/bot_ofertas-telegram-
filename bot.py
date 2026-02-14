@@ -19,6 +19,8 @@ def run_flask():
 
 # 2. CONFIGURAÇÃO DO BOT (CRIAR A VARIÁVEL 'bot' PRIMEIRO)
 TOKEN = '8579259563:AAEYxm0ktGMDBev2R2svYQ4nyVl99CktzuA'
+# Adicione esta linha abaixo do CHAT_ID
+SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTtO4yCHk9jG121SV-EHxKWkXDB82kRbFHAWBDF2prrCF/pub?gid=0&single=true&output=csv'
 CHAT_ID = '@plugin_oferta' # Certifique-se que o bot é ADM aqui
 bot = telebot.TeleBot(TOKEN)
 
@@ -67,4 +69,5 @@ if __name__ == "__main__":
     
     print("Bot ligado e monitorando a planilha...")
     bot.polling(none_stop=True)
+
 
