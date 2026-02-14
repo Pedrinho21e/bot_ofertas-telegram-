@@ -6,10 +6,10 @@ from flask import Flask
 
 # 1. CONFIGURAÇÕES INICIAIS
 TOKEN = '8579259563:AAEYxm0ktGMDBev2R2svYQ4nyV199CktzuA'
-# Use o ID numérico se o @plugin_oferta der erro de API
+# DICA: Se o erro de API persistir, use o ID numérico: -1003233748780
 CHAT_ID = '@plugin_oferta' 
 
-# AQUI ESTAVA O ERRO: Você precisa definir a variável SHEET_URL aqui em cima
+# DEFINA A VARIÁVEL SHEET_URL AQUI (O seu link CSV)
 SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTtO4yCHk9jG121SV-EHxKWkXDB82kRbFHAWBDF2prrCF/pub?gid=0&single=true&output=csv'
 
 bot = telebot.TeleBot(TOKEN)
@@ -20,19 +20,18 @@ def index():
     return "Bot Online!"
 
 def run_flask():
-    # O Koyeb usa a porta 8080 por padrão
     app.run(host='0.0.0.0', port=8080)
 
-# 2. FUNÇÃO DE LEITURA DA PLANILHA
+# 2. FUNÇÃO DE MONITORAMENTO DA PLANILHA
 def rodar_bot():
     while True:
         try:
             print("Verificando planilha...")
-            # Agora SHEET_URL está definida e o bot vai conseguir ler
+            # Agora a variável SHEET_URL está definida corretamente
             df = pd.read_csv(SHEET_URL)
             
             for index, row in df.iterrows():
-                # Verifica se a coluna Status na planilha está vazia
+                # Verifica se a coluna Status está vazia
                 if pd.isna(row['Status']) or row['Status'] == '':
                     link = row['Linkes']
                     print(f"Nova oferta encontrada: {link}")
@@ -41,24 +40,21 @@ def rodar_bot():
                     mensagem = f"🔥 **OFERTA NOVA!**\n\n🔗 {link}"
                     bot.send_message(CHAT_ID, mensagem, parse_mode='Markdown')
                     
-                    # Nota: Você deve escrever algo na coluna Status da planilha 
-                    # manualmente para o bot não repetir a mesma postagem.
+                    # IMPORTANTE: Você precisa marcar como 'Postado' na planilha 
+                    # para ele não repetir a mesma mensagem infinitamente.
             
         except Exception as e:
             print(f"Erro na planilha: {e}")
             
-        time.sleep(60) # Espera 1 minuto para checar de novo
+        time.sleep(60) # Espera 1 minuto para checar novamente
 
-# 3. INICIALIZAÇÃO (O CORAÇÃO DO BOT)
+# 3. INICIALIZAÇÃO
 if __name__ == "__main__":
-    # Inicia o servidor Flask em segundo plano
+    # Inicia o servidor para o Koyeb não dar erro de saúde
     threading.Thread(target=run_flask).start()
     
-    # Inicia o monitor de planilha em segundo plano
+    # Inicia o motor de leitura da planilha
     threading.Thread(target=rodar_bot).start()
     
     print("Bot ligado e monitorando a planilha...")
     bot.polling(none_stop=True)
-
-
-
