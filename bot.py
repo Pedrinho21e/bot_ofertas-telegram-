@@ -1,110 +1,39 @@
-import threading
-from http.server import SimpleHTTPRequestHandler, HTTPServer
-import os
-
-# Função para o servidor que "engana" o Render
-def run_server():
-    port = int(os.environ.get("PORT", 10000))
-    server_address = ('', port)
-    httpd = HTTPServer(server_address, SimpleHTTPRequestHandler)
-    print(f"Servidor falso rodando na porta {port}")
-    httpd.serve_forever()
-
-# Inicia o servidor em uma "thread" separada para não travar o bot
-threading.Thread(target=run_server, daemon=True).start()
-import os
 import time
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
-
-# --- CONFIGURAÇÃO ---
-TOKEN = '8579259563:AAEYxm0ktGMDBev2R2svYQ4nyVl99CktzuA' 
-CHAT_ID = '-1003233748780'
-SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTtO4yCHk9j_yMu_o7ibDwSZjVhVqn1-izNix08ceVA7jG12lSV-EHxKWkXDB82kRbFHAWBDf2prrCF/pub?output=csv'
-
-def extrair_dados(url):
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"}
-    try:
-        response = requests.get(url, headers=headers, timeout=15)
-        soup = BeautifulSoup(response.text, 'html.parser')
-        
-        # Pega título
-        t_tag = soup.find('h1', class_='ui-pdp-title')
-        titulo = t_tag.text.strip() if t_tag else "Oferta Incrível"
-        
-        # Pega preço
-        p_tag = soup.find('meta', itemprop='price')
-        preco = f"R$ {p_tag['content']}" if p_tag else "Confira no site"
-        
-        # Pega FOTO e limpa para ficar GRANDE
-        img_tag = soup.find('img', class_='ui-pdp-image')
-        foto = img_tag.get('data-src') or img_tag.get('src')
-        if foto:
-            foto = foto.replace("-I.jpg", "-F.jpg").replace("-O.jpg", "-F.jpg").split('?')[0]
-            
-        return titulo, preco, foto
-    except:
-        return None, None, None
-
-def rodar_bot():
-    print("🚀 Bot 24h Iniciado com Sucesso!")
-    ja_postados = set()
-    
-    while True:
-        try:
-            df = pd.read_csv(SHEET_URL)
-            df.columns = df.columns.str.strip()
-            col_link = 'Linkes' if 'Linkes' in df.columns else 'Link'
-
-            for index, linha in df.iterrows():
-                link = str(linha[col_link]).strip()
-                
-                if link != 'nan' and link not in ja_postados:
-                    t, p, f = extrair_dados(link)
-                    
-                    if t and f:
-                        legenda = f"🔥 {t}\n\n💰 Por apenas: {p}\n\n🛒 COMPRE AQUI: {link}"
-                        
-                        # ENVIA COMO FOTO GRANDE (sendPhoto)
-                        requests.post(f"https://api.telegram.org/bot{TOKEN}/sendPhoto", 
-                                      data={'chat_id': CHAT_ID, 'photo': f, 'caption': legenda, 'parse_mode': 'Markdown'})
-                        
-                        ja_postados.add(link)
-            
-            time.sleep(60) # Verifica a planilha a cada minuto
-        except:
-            time.sleep(30)
-@bot.message_handler(commands=['start'])
-def testar(message):
-    bot.reply_to(message, "Bot Online e acompanhando a planilha!")
-if __name__ ==  "__main__":
-    rodar_bot()
-  import threading
+import telebot
+import threading
 from flask import Flask
 
+# --- CONFIGURAÇÃO DO SERVIDOR FANTASMA PARA O KOYEB ---
 app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return "Bot está vivo!"
+    return "Bot Online!"
 
 def run_flask():
+    # Porta 8080 é o padrão do Koyeb
     app.run(host='0.0.0.0', port=8080)
 
+# --- CONFIGURAÇÃO DO BOT ---
+TOKEN = '8579259563:AAEYxm0ktGMDBev2R2svYQ4nyVl99CktzuA'
+CHAT_ID = '-1003233748780'
+bot = telebot.TeleBot(TOKEN)
+
+# (Mantenha suas funções extrair_dados e rodar_bot aqui como estavam...)
+
+@bot.message_handler(commands=['start'])
+def testar(message):
+    bot.reply_to(message, "Bot Online e acompanhando a planilha!")
+
 if __name__ == "__main__":
-    # Inicia o servidor fantasma em uma linha separada
+    # 1. Inicia o Flask em uma thread separada para o Koyeb não matar o processo
     threading.Thread(target=run_flask).start()
     
-    # Inicia o seu bot
     print("Bot iniciado...")
+    
+    # 2. Inicia o loop do seu bot
+    # none_stop=True garante que ele não pare se houver erro de rede
     bot.polling(none_stop=True)
-
-
-
-
-
-
-
-
-
