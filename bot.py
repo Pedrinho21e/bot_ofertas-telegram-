@@ -34,7 +34,32 @@ def extrair_dados(url):
 
 def rodar_bot():
     # Sua lógica para ler a planilha e enviar mensagens
-    print("https://docs.google.com/spreadsheets/d/e/2PACX-1vTtO4yCHk9j_yMu_o7ibDwSZjVhVqn1-izNix08ceVA7jG12lSV-EHxKWkXDB82kRbFHAWBDf2prrCF/pub?gid=0&single=true&output=csv")
+    def  rodar_bot():
+    while True:
+        try:
+            print("Verificando planilha...")
+            # Lê a planilha usando o link que você configurou no SHEET_URL
+            df = pd.read_csv(SHEET_URL)
+            
+            # Percorre cada linha da planilha
+            for index, row in df.iterrows():
+                # Verifica se a coluna Status está vazia (ou nan)
+                if pd.isna(row['Status']) or row['Status'] == '':
+                    link = row['Linkes']
+                    print(f"Nova oferta encontrada: {link}")
+                    
+                    # Tenta enviar para o Telegram
+                    mensagem = f"🔥 **OFERTA NOVA!**\n\n🔗 {link}"
+                    bot.send_message(CHAT_ID, mensagem, parse_mode='Markdown')
+                    
+                    # Aqui você precisaria de uma lógica para marcar como "Postado"
+                    # Como o link de CSV é apenas para leitura, o ideal é você 
+                    # escrever manualmente "Postado" na planilha após o bot enviar.
+            
+        except Exception as e:
+            print(f"Erro ao processar planilha: {e}")
+            
+        time.sleep(60) # Espera 1 minuto para checar de novo
 
 # 4. COMANDOS DO TELEGRAM (APÓS DEFINIR O 'bot')
 @bot.message_handler(commands=['start'])
@@ -42,13 +67,13 @@ def testar(message):
     bot.reply_to(message, "Bot Online e acompanhando a planilha!")
 
 # 5. INICIALIZAÇÃO
+
 if __name__ == "__main__":
-    # Inicia o Flask em segundo plano
+    # Inicia o servidor para o Koyeb não desligar
     threading.Thread(target=run_flask).start()
     
-    print("Bot iniciado...")
+    # INICIA A LEITURA DA PLANILHA EM SEGUNDO PLANO
+    threading.Thread(target=rodar_bot).start()
     
-    # Inicia o loop do bot
+    print("Bot iniciado e monitorando planilha...")
     bot.polling(none_stop=True)
-
-
