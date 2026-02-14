@@ -75,10 +75,13 @@ def rodar_bot():
             time.sleep(60) # Verifica a planilha a cada minuto
         except:
             time.sleep(30)
-
+@bot.message_handler(commands=['start'])
+def testar(message):
+    bot.reply_to(message, "Bot Online e acompanhando a planilha!")
 if __name__ ==  "__main__":
     rodar_bot()
     bot.polling(none_stop=True)
+
 
 
 
