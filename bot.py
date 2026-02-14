@@ -6,7 +6,7 @@ import telebot
 import threading
 from flask import Flask
 
-# --- CONFIGURAÇÃO DO SERVIDOR FANTASMA PARA O KOYEB ---
+# 1. CONFIGURAÇÃO DO SERVIDOR FANTASMA (PARA O KOYEB NÃO DESLIGAR)
 app = Flask(__name__)
 
 @app.route('/')
@@ -14,27 +14,39 @@ def index():
     return "Bot Online!"
 
 def run_flask():
-    # Porta 8080 é o padrão do Koyeb
+    # O Koyeb usa a porta 8080 por padrão
     app.run(host='0.0.0.0', port=8080)
 
-# --- CONFIGURAÇÃO DO BOT ---
+# 2. CONFIGURAÇÃO DO BOT (CRIAR A VARIÁVEL 'bot' PRIMEIRO)
 TOKEN = '8579259563:AAEYxm0ktGMDBev2R2svYQ4nyVl99CktzuA'
-CHAT_ID = '@plugin_oferta'
+CHAT_ID = '@plugin_oferta' # Certifique-se que o bot é ADM aqui
 bot = telebot.TeleBot(TOKEN)
 
-# (Mantenha suas funções extrair_dados e rodar_bot aqui como estavam...)
+# 3. FUNÇÕES DE EXTRAÇÃO (COLOQUE SUAS FUNÇÕES AQUI)
+def extrair_dados(url):
+    headers = {"User-Agent": "Mozilla/5.0"}
+    try:
+        response = requests.get(url, headers=headers, timeout=15)
+        # ... resto da sua lógica de extração
+        return "Dados extraídos"
+    except:
+        return None
 
+def rodar_bot():
+    # Sua lógica para ler a planilha e enviar mensagens
+    print("Verificando planilha...")
+
+# 4. COMANDOS DO TELEGRAM (APÓS DEFINIR O 'bot')
 @bot.message_handler(commands=['start'])
 def testar(message):
     bot.reply_to(message, "Bot Online e acompanhando a planilha!")
 
+# 5. INICIALIZAÇÃO
 if __name__ == "__main__":
-    # 1. Inicia o Flask em uma thread separada para o Koyeb não matar o processo
+    # Inicia o Flask em segundo plano
     threading.Thread(target=run_flask).start()
     
     print("Bot iniciado...")
     
-    # 2. Inicia o loop do seu bot
-    # none_stop=True garante que ele não pare se houver erro de rede
+    # Inicia o loop do bot
     bot.polling(none_stop=True)
-
