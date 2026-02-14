@@ -34,7 +34,7 @@ def extrair_dados(url):
 
 def rodar_bot():
     # Sua lógica para ler a planilha e enviar mensagens
-    print("Verificando planilha...")
+    print("https://docs.google.com/spreadsheets/d/e/2PACX-1vTtO4yCHk9j_yMu_o7ibDwSZjVhVqn1-izNix08ceVA7jG12lSV-EHxKWkXDB82kRbFHAWBDf2prrCF/pub?gid=0&single=true&output=csv")
 
 # 4. COMANDOS DO TELEGRAM (APÓS DEFINIR O 'bot')
 @bot.message_handler(commands=['start'])
@@ -50,4 +50,5 @@ if __name__ == "__main__":
     
     # Inicia o loop do bot
     bot.polling(none_stop=True)
+
 
