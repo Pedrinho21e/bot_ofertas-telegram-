@@ -78,6 +78,7 @@ def rodar_bot():
 
 if __name__ ==  "__main__":
     rodar_bot()
+    bot.polling(none_stop=True)
 
 
 
