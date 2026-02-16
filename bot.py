@@ -1,61 +1,82 @@
 import telebot
-import pandas as pd
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 import threading
 import time
 from flask import Flask
+import os
+import json
+import requests
+from bs4 import BeautifulSoup
 
-# 1. CONFIGURAÇÕES INICIAIS
+# 1. CONFIGURAÇÕES
 TOKEN = '8579259563:AAEYxm0ktGMDBev2R2svYQ4nyV199CktzuA'
-# Usando o ID numérico para evitar erros de 'Bad Request' no Telegram
 CHAT_ID = -1003233748780 
-
-# AQUI ESTAVA O ERRO: Definindo o link CSV publico da sua planilha
-SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTtO4yCHk9jG121SV-EHxKWkXDB82kRbFHAWBDF2prrCF/pub?gid=0&single=true&output=csv'
+NOME_DA_PLANILHA = "NOME_EXATO_DA_SUA_PLANILHA"
 
 bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 
 @app.route('/')
-def index():
-    return "Bot Online!"
+def index(): return "Bot de Scraping Automático Online!"
 
-def run_flask():
-    # Porta 8080 exigida pelo Koyeb
-    app.run(host='0.0.0.0', port=8080)
+# 2. FUNÇÃO PARA PEGAR DADOS DO SITE (SCRAPING)
+def extrair_dados_do_link(url):
+    try:
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"}
+        response = requests.get(url, headers=headers, timeout=10)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        # Tenta pegar o título (funciona na maioria dos sites)
+        titulo = soup.find('meta', property='og:title')
+        titulo = titulo['content'] if titulo else "Oferta Incrível!"
+        
+        # Tenta pegar a imagem principal
+        imagem = soup.find('meta', property='og:image')
+        imagem_url = imagem['content'] if imagem else None
+        
+        return titulo, imagem_url
+    except:
+        return "Confira essa oferta!", None
 
-# 2. MOTOR DE MONITORAMENTO DA PLANILHA
+def conectar_google():
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    creds_json = json.loads(os.environ.get('GOOGLE_CREDS'))
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_json, scope)
+    return gspread.authorize(creds)
+
+# 3. MONITORAMENTO AUTOMÁTICO
 def rodar_bot():
+    client = conectar_google()
+    sheet = client.open(NOME_DA_PLANILHA).sheet1
+    
     while True:
         try:
-            print("Verificando planilha...")
-            # Agora a variável SHEET_URL existe e o bot consegue ler os dados
-            df = pd.read_csv(SHEET_URL)
-            
-            for index, row in df.iterrows():
-                # Verifica se a coluna Status (Coluna D) está vazia (NaN ou '')
-                if pd.isna(row['Status']) or str(row['Status']).strip() == '':
-                    link = row['Linkes']
-                    print(f"Nova oferta encontrada: {link}")
+            dados = sheet.get_all_records()
+            for i, linha in enumerate(dados, start=2):
+                status = str(linha.get('Status', '')).strip()
+                link = linha.get('Linkes', '')
+                
+                if status == '' and link != '':
+                    # O BOT FAZ O TRABALHO SOZINHO AQUI:
+                    titulo, foto_url = extrair_dados_do_link(link)
                     
-                    # Monta e envia a mensagem para o Telegram
-                    mensagem = f"🔥 **OFERTA NOVA!**\n\n🔗 {link}"
-                    bot.send_message(CHAT_ID, mensagem, parse_mode='Markdown')
+                    legenda = f"🔥 **{titulo}**\n\n🔗 [CLIQUE AQUI PARA APROVEITAR]({link})"
                     
-                    # DICA: Você deve escrever 'Postado' na planilha manualmente 
-                    # para que o bot não envie o mesmo link de novo no próximo minuto.
-            
+                    if foto_url:
+                        bot.send_photo(CHAT_ID, foto_url, caption=legenda, parse_mode='Markdown')
+                    else:
+                        bot.send_message(CHAT_ID, legenda, parse_mode='Markdown')
+                    
+                    sheet.update_cell(i, 4, "Postado") # Marca na coluna D
+                    print(f"Postado: {titulo}")
+                    
         except Exception as e:
-            print(f"Erro na planilha: {e}")
+            print(f"Erro no monitor: {e}")
             
-        time.sleep(60) # Checa a planilha a cada 1 minuto
+        time.sleep(60)
 
-# 3. INICIALIZAÇÃO (Threading)
 if __name__ == "__main__":
-    # Inicia o Flask (Saúde da Instância no Koyeb)
-    threading.Thread(target=run_flask).start()
-    
-    # Inicia o monitor de ofertas
+    threading.Thread(target=lambda: app.run(host='0.0.0.0', port=8080)).start()
     threading.Thread(target=rodar_bot).start()
-    
-    print("Bot ligado e monitorando a planilha...")
     bot.polling(none_stop=True)
