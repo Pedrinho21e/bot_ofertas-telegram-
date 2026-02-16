@@ -10,7 +10,7 @@ import requests
 from bs4 import BeautifulSoup
 
 # 1. CONFIGURAÇÕES
-TOKEN = '8579259563:AAEYxm0ktGMDBev2R2svYQ4nyV199CktzuA'
+TOKEN = '8579259563:AAFE9yqbX4oT0Ek9e499JEPUcwkBEMak0Xs'
 CHAT_ID = '8579259563'
 NOME_DA_PLANILHA = "Ofertas"
 
@@ -80,6 +80,7 @@ if __name__ == "__main__":
     threading.Thread(target=lambda: app.run(host='0.0.0.0', port=8080)).start()
     threading.Thread(target=rodar_bot).start()
     bot.polling(none_stop=True)
+
 
 
 
