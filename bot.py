@@ -11,9 +11,8 @@ from bs4 import BeautifulSoup
 
 # 1. CONFIGURAÇÕES
 TOKEN = '8579259563:AAFE9yqbX4oT0Ek9e499JEPUcwkBEMak0Xs'
-CHAT_ID = '8579259563'
+CHAT_ID = -1003233748780
 NOME_DA_PLANILHA = "Ofertas"
-
 bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 
@@ -48,7 +47,7 @@ def conectar_google():
 # 3. MONITORAMENTO AUTOMÁTICO
 def rodar_bot():
     client = conectar_google()
-    sheet = client.open(NOME_DA_PLANILHA).sheet1
+    sheet1 = client.open(NOME_DA_PLANILHA).sheet1
     
     while True:
         try:
@@ -80,6 +79,7 @@ if __name__ == "__main__":
     threading.Thread(target=lambda: app.run(host='0.0.0.0', port=8080)).start()
     threading.Thread(target=rodar_bot).start()
     bot.polling(none_stop=True)
+
 
 
 
