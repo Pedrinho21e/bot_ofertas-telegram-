@@ -1,84 +1,61 @@
 import telebot
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-import threading
+import feedparser
 import time
-from flask import Flask
+import random
 import os
-import json
-import requests
-from bs4 import BeautifulSoup
+from telebot import types
 
-# 1. CONFIGURAÇÕES
-TOKEN = '8579259563:AAFE9yqbX4oT0Ek9e499JEPUcwkBEMak0Xs'
-CHAT_ID = -1003233748780
-NOME_DA_PLANILHA = "Ofertas"
+# Configurações via Variáveis de Ambiente (Padrão Railway)
+TOKEN = os.getenv("8579259563:AAFE9yqbX4oT0Ek9e499JEPUcwkBEMak0Xs")
+CHAT_ID = os.getenv("@plugin_oferta")
 bot = telebot.TeleBot(TOKEN)
-app = Flask(__name__)
 
-@app.route('/')
-def index(): return "Bot de Scraping Automático Online!"
+FONTES_RSS = [
+    "https://www.pelando.com.br/rss",
+    "https://www.promobit.com.br/feed/"
+]
 
-# 2. FUNÇÃO PARA PEGAR DADOS DO SITE (SCRAPING)
-def extrair_dados_do_link(url):
+links_postados = set()
+contador_lista = 0
+
+def postar_minha_lista():
     try:
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"}
-        response = requests.get(url, headers=headers, timeout=10)
-        soup = BeautifulSoup(response.text, 'html.parser')
-        
-        # Tenta pegar o título (funciona na maioria dos sites)
-        titulo = soup.find('meta', property='og:title')
-        titulo = titulo['content'] if titulo else "Oferta Incrível!"
-        
-        # Tenta pegar a imagem principal
-        imagem = soup.find('meta', property='og:image')
-        imagem_url = imagem['content'] if imagem else None
-        
-        return titulo, imagem_url
-    except:
-        return "Confira essa oferta!", None
+        with open("produto.txt", "r", encoding="utf-8") as f:
+            linhas = [l.strip() for l in f.readlines() if ";" in l]
+        if linhas:
+            item = random.choice(linhas)
+            nome, link = item.split(";")
+            markup = types.InlineKeyboardMarkup()
+            markup.add(types.InlineKeyboardButton(text="🛒 COMPRAR AGORA", url=link.strip()))
+            bot.send_message(CHAT_ID, f"🌟 <b>OFERTA SELECIONADA</b>\n\n{nome}", reply_markup=markup, parse_mode="HTML")
+    except Exception as e:
+        print(f"Erro na lista: {e}")
 
-def conectar_google():
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds_json = json.loads(os.environ.get('GOOGLE_CREDS'))
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_json, scope)
-    return gspread.authorize(creds)
-
-# 3. MONITORAMENTO AUTOMÁTICO
-def rodar_bot():
-    client = conectar_google()
-    sheet1 = client.open(NOME_DA_PLANILHA).sheet1
-    
-    while True:
+def buscar_ofertas():
+    global contador_lista
+    for url in FONTES_RSS:
         try:
-            dados = sheet.get_all_records()
-            for i, linha in enumerate(dados, start=2):
-                status = str(linha.get('Status', '')).strip()
-                link = linha.get('Linkes', '')
-                
-                if status == '' and link != '':
-                    # O BOT FAZ O TRABALHO SOZINHO AQUI:
-                    titulo, foto_url = extrair_dados_do_link(link)
-                    
-                    legenda = f"🔥 **{titulo}**\n\n🔗 [CLIQUE AQUI PARA APROVEITAR]({link})"
-                    
-                    if foto_url:
-                        bot.send_photo(CHAT_ID, foto_url, caption=legenda, parse_mode='Markdown')
-                    else:
-                        bot.send_message(CHAT_ID, legenda, parse_mode='Markdown')
-                    
-                    sheet.update_cell(i, 4, "Postado") # Marca na coluna D
-                    print(f"Postado: {titulo}")
-                    
-        except Exception as e:
-            print(f"Erro no monitor: {e}")
-            
-        time.sleep(60)
+            feed = feedparser.parse(url)
+            for entry in feed.entries[:3]: 
+                if entry.link not in links_postados:
+                    markup = types.InlineKeyboardMarkup()
+                    markup.add(types.InlineKeyboardButton(text="🔥 VER PROMOÇÃO", url=entry.link))
+                    bot.send_message(CHAT_ID, f"📢 <b>NOVIDADE!</b>\n\n{entry.title}", reply_markup=markup, parse_mode="HTML")
+                    links_postados.add(entry.link)
+                    contador_lista += 1
+                    if contador_lista >= 2:
+                        time.sleep(5)
+                        postar_minha_lista()
+                        contador_lista = 0
+                    time.sleep(10)
+        except:
+            pass
 
-if __name__ == "__main__":
-    threading.Thread(target=lambda: app.run(host='0.0.0.0', port=8080)).start()
-    threading.Thread(target=rodar_bot).start()
-    bot.polling(none_stop=True)
+print("🚀 Bot Railway Iniciado!")
+while True:
+    buscar_ofertas()
+    time.sleep(120)
+
 
 
 
